@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caução </title>
+        <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+        <header class="topo">
+        <a class="marca" href="index.html">🐤 ReservaCanarinho</a>
+
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="mesas.html">Mesas</a>
+            <a href="checkin.html">Check-in</a>
+        </nav>
+    </header>
+
+    <main class="container estreito">
+        <a class="voltar" href="mesas.html">← Voltar para as mesas</a>
+
+        <section class="cartao">
+            <h1>Pagamento da caução</h1>
+
+            <p>
+                Selecione a reserva e confirme a caução
+                de demonstração para garantir a mesa.
+            </p>
+
+            <div class="alerta">
+                Este é um protótipo acadêmico.
+                Nenhum PIX real será enviado ou cobrado.
+            </div>
+
+            <form id="formPagamento">
+                <label for="reservaPagamento">Reserva pendente</label>
+
+                <select id="reservaPagamento" required>
+                    <option value="">Selecione uma reserva</option>
+                </select>
+
+                <div class="pix-demo">
+                    <span>Valor de exemplo</span>
+                    <strong>R$ 30,00</strong>
+                    <small>Chave PIX fictícia: reserva@canarinho.demo</small>
+                </div>
+
+                <button class="botao largura-total" type="submit">
+                    Simular pagamento PIX
+                </button>
+            </form>
+
+            <p id="mensagemPagamento" class="mensagem"
+               aria-live="polite"></p>
+        </section>
+    </main>
+
+    <footer>
+        Reserva Canarinho · GS
+    </footer>
+</body>
+</html>
