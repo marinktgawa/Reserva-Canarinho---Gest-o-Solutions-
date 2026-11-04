@@ -1,9 +1,21 @@
 
+// ==========================================
+// RESERVACANARINHO - GESTÃO SOLUTIONS
+// ==========================================
+
+// CHAVES DO LOCALSTORAGE
 const CHAVE_CLIENTES = "canarinho_clientes";
 const CHAVE_RESERVAS = "canarinho_reservas";
 const CHAVE_ESPERA = "canarinho_espera";
 
 const TOTAL_MESAS = 10;
+const VALOR_CAUCao = 30;
+const PERCENTUAL_REEMBOLSO = 10;
+
+
+// ==========================================
+// FUNÇÕES GERAIS
+// ==========================================
 
 // Ler informações salvas no navegador
 function ler(chave) {
@@ -45,10 +57,53 @@ function dataLegivel(valor) {
         ? valor
         : data.toLocaleString("pt-BR");
 }
-// VERIFICAR NO-SHOW E CALCULAR REEMBOLSO
+
+// Evitar inserir texto HTML enviado pelo usuário
+function escapar(valor) {
+    return String(valor ?? "").replace(/[&<>"']/g, caractere => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[caractere]);
+}
+
+
+// ==========================================
+// VERIFICAR CLIENTE
+// ==========================================
+
+function clienteExiste(email) {
+    return ler(CHAVE_CLIENTES).some(
+        cliente =>
+            cliente.email &&
+            cliente.email.toLowerCase() === email.toLowerCase()
+    );
+}
+
+
+// ==========================================
+// VERIFICAR MESAS OCUPADAS
+// ==========================================
+
+function reservaAtivaMesa(numero) {
+    return ler(CHAVE_RESERVAS).some(reserva =>
+        Number(reserva.mesa) === Number(numero) &&
+        ["Pendente", "Paga", "Check-in realizado"]
+            .includes(reserva.status)
+    );
+}
+
+
+// ==========================================
+// NO-SHOW E REEMBOLSO
+// ==========================================
+
 function verificarNoShow() {
     const agora = Date.now();
     const reservas = ler(CHAVE_RESERVAS);
+
     let mudou = false;
 
     reservas.forEach(reserva => {
@@ -58,27 +113,35 @@ function verificarNoShow() {
             !reserva.checkin &&
             reserva.data
         ) {
-            const inicio = new Date(reserva.data).getTime();
+
+            const horarioMarcado =
+                new Date(reserva.data).getTime();
 
             // Prazo de 30 minutos após o horário marcado
-            const prazoFinal = inicio + (30 * 60 * 1000);
+            const prazoFinal =
+                horarioMarcado + (30 * 60 * 1000);
 
             if (
-                !Number.isNaN(inicio) &&
+                !Number.isNaN(horarioMarcado) &&
                 agora > prazoFinal
             ) {
-                const valorCaucao = 30;
 
-                // Calcula 10% de reembolso
-                const valorReembolso = valorCaucao * 0.10;
+                // Calcular reembolso de 10%
+                const valorReembolso =
+                    VALOR_CAUCao * (PERCENTUAL_REEMBOLSO / 100);
 
                 reserva.status = "Cancelada por No-Show";
 
                 reserva.reembolso = valorReembolso;
 
-                reserva.percentualReembolso = 10;
+                reserva.percentualReembolso =
+                    PERCENTUAL_REEMBOLSO;
 
-                reserva.canceladaEm = new Date().toISOString();
+                reserva.valorRetido =
+                    VALOR_CAUCao - valorReembolso;
+
+                reserva.canceladaEm =
+                    new Date().toISOString();
 
                 reserva.motivo =
                     "Cliente não realizou check-in até 30 minutos após o horário marcado.";
@@ -92,25 +155,15 @@ function verificarNoShow() {
         salvar(CHAVE_RESERVAS, reservas);
     }
 }
-// Verificar se o cliente está cadastrado
-function clienteExiste(email) {
-    return ler(CHAVE_CLIENTES).some(
-        cliente => cliente.email.toLowerCase() === email.toLowerCase()
-    );
-}
 
-// Verificar se uma mesa está ocupada
-function reservaAtivaMesa(numero) {
-    return ler(CHAVE_RESERVAS).some(reserva =>
-        Number(reserva.mesa) === Number(numero) &&
-        ["Pendente", "Paga", "Check-in realizado"]
-            .includes(reserva.status)
-    );
-}
 
-// ATUALIZAR MAPA DE MESAS CLICÁVEIS
+// ==========================================
+// MAPA DE MESAS CLICÁVEIS
+// ==========================================
+
 function atualizarMapa() {
     const mapa = document.getElementById("mapaMesas");
+
     const select = document.getElementById("mesaReserva");
 
     if (!mapa) return;
@@ -124,6 +177,7 @@ function atualizarMapa() {
             '<option value="">Selecione uma mesa livre</option>';
     }
 
+    // Criar as 10 mesas
     for (let numero = 1; numero <= TOTAL_MESAS; numero++) {
 
         const ocupada = reservaAtivaMesa(numero);
@@ -132,25 +186,34 @@ function atualizarMapa() {
 
         card.type = "button";
 
-        card.className = "mesa " +
-            (ocupada ? "ocupada" : "livre");
+        card.className =
+            "mesa " + (ocupada ? "ocupada" : "livre");
 
         card.disabled = ocupada;
 
         card.setAttribute("aria-pressed", "false");
 
+        card.setAttribute(
+            "aria-label",
+            "Mesa " + numero + (ocupada ? ", reservada" : ", livre")
+        );
+
+        // Nome da mesa
         const titulo = document.createElement("strong");
 
         titulo.textContent = "Mesa " + numero;
 
+        // Situação da mesa
         const status = document.createElement("span");
 
-        status.textContent = ocupada ? "Reservada" : "Livre";
+        status.textContent =
+            ocupada ? "Reservada" : "Livre";
 
         card.appendChild(titulo);
+
         card.appendChild(status);
 
-        // Permitir selecionar a mesa pelo clique
+        // Selecionar mesa ao clicar
         card.addEventListener("click", () => {
 
             if (ocupada) return;
@@ -159,20 +222,23 @@ function atualizarMapa() {
                 select.value = numero;
             }
 
-            // Remover seleção anterior
+            // Retirar seleção anterior
             mapa.querySelectorAll(".mesa").forEach(mesa => {
+
                 mesa.classList.remove("selecionada");
+
                 mesa.setAttribute("aria-pressed", "false");
             });
 
-            // Destacar mesa escolhida
+            // Destacar mesa selecionada
             card.classList.add("selecionada");
+
             card.setAttribute("aria-pressed", "true");
         });
 
         mapa.appendChild(card);
 
-        // Adicionar somente mesas livres ao formulário
+        // Adicionar mesas livres ao formulário
         if (!ocupada && select) {
 
             const opcao = document.createElement("option");
@@ -185,7 +251,7 @@ function atualizarMapa() {
         }
     }
 
-    // Restaurar seleção anterior, se a mesa continuar livre
+    // Restaurar seleção anterior, se ainda estiver livre
     if (
         select &&
         mesaAnterior &&
@@ -193,6 +259,7 @@ function atualizarMapa() {
             opcao => opcao.value === mesaAnterior
         )
     ) {
+
         select.value = mesaAnterior;
 
         const mesaSelecionada = Array.from(
@@ -203,36 +270,54 @@ function atualizarMapa() {
         );
 
         if (mesaSelecionada) {
+
             mesaSelecionada.classList.add("selecionada");
+
             mesaSelecionada.setAttribute("aria-pressed", "true");
         }
     }
 }
 
-// Atualizar a lista de reservas e o pagamento
+
+// ==========================================
+// ATUALIZAR MINHAS RESERVAS
+// ==========================================
+
 function atualizarReservas() {
+
     const lista = document.getElementById("listaReservas");
 
     if (lista) {
+
         const reservas = ler(CHAVE_RESERVAS);
 
         if (!reservas.length) {
+
             lista.innerHTML =
                 '<p class="muted">Ainda não existem reservas.</p>';
+
         } else {
+
             lista.innerHTML = reservas.slice().reverse().map(reserva => `
+
                 <div class="reserva-item">
+
                     <strong>${escapar(reserva.codigo)}</strong>
-                    · Mesa ${reserva.mesa}
+
+                    · Mesa ${escapar(reserva.mesa)}
+
                     <br>
 
-                    <span>${dataLegivel(reserva.data)}</span>
+                    <span>${escapar(dataLegivel(reserva.data))}</span>
+
                     <br>
 
                     Cliente: ${escapar(reserva.email)}
+
                     <br>
 
                     Status:
+
                     <span class="status ${classeStatus(reserva.status)}">
                         ${escapar(reserva.status)}
                     </span>
@@ -242,15 +327,34 @@ function atualizarReservas() {
                         ? '<br><a href="pagamento.html">Ir para pagamento da caução</a>'
                         : ""
                     }
+
+                    ${
+                        reserva.reembolso !== undefined
+                        ? `
+                            <br>
+                            <strong>Reembolso (${reserva.percentualReembolso}%):</strong>
+                            R$ ${Number(reserva.reembolso).toFixed(2).replace(".", ",")}
+
+                            <br>
+
+                            <strong>Valor retido:</strong>
+                            R$ ${Number(reserva.valorRetido).toFixed(2).replace(".", ",")}
+                        `
+                        : ""
+                    }
+
                 </div>
+
             `).join("");
         }
     }
 
+    // Atualizar opções da página de pagamento
     const selectPagamento =
         document.getElementById("reservaPagamento");
 
     if (selectPagamento) {
+
         const pendentes = ler(CHAVE_RESERVAS).filter(
             reserva => reserva.status === "Pendente"
         );
@@ -259,9 +363,11 @@ function atualizarReservas() {
             '<option value="">Selecione uma reserva</option>';
 
         pendentes.forEach(reserva => {
+
             const opcao = document.createElement("option");
 
             opcao.value = reserva.codigo;
+
             opcao.textContent =
                 `${reserva.codigo} · Mesa ${reserva.mesa} · ${reserva.email}`;
 
@@ -270,8 +376,13 @@ function atualizarReservas() {
     }
 }
 
-// Atualizar a lista de espera
+
+// ==========================================
+// LISTA DE ESPERA
+// ==========================================
+
 function atualizarEspera() {
+
     const lista = document.getElementById("listaEspera");
 
     if (!lista) return;
@@ -279,14 +390,23 @@ function atualizarEspera() {
     const fila = ler(CHAVE_ESPERA);
 
     lista.innerHTML = fila.length
+
         ? fila.map((item, indice) =>
+
             `<li>${indice + 1}. ${escapar(item.email)} — aguardando mesa</li>`
-          ).join("")
+
+        ).join("")
+
         : "<li>A lista de espera está vazia.</li>";
 }
 
-// Definir a cor do status da reserva
+
+// ==========================================
+// CORES DOS STATUS
+// ==========================================
+
 function classeStatus(status) {
+
     if (status === "Paga") return "pago";
 
     if (status === "Check-in realizado") return "checkin";
@@ -296,93 +416,123 @@ function classeStatus(status) {
     return "";
 }
 
-// Evitar inserir texto HTML enviado pelo usuário
-function escapar(valor) {
-    return String(valor).replace(/[&<>"']/g, caractere => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[caractere]);
-}
 
-// Executar quando a página carregar
+// ==========================================
+// INICIALIZAÇÃO DO SISTEMA
+// ==========================================
+
 document.addEventListener("DOMContentLoaded", () => {
-    verificarNoShow();
-    atualizarMapa();
-    atualizarReservas();
-    atualizarEspera();
 
-// Verificar No-Show automaticamente a cada 15 segundos
-setInterval(() => {
-
+    // Verificar reservas expiradas
     verificarNoShow();
 
+    // Carregar informações
     atualizarMapa();
 
     atualizarReservas();
 
     atualizarEspera();
 
-}, 15000);
 
-// Sincronizar seleção do formulário com o mapa
-const selectMesa = document.getElementById("mesaReserva");
+    // ======================================
+    // ATUALIZAÇÃO AUTOMÁTICA
+    // ======================================
 
-if (selectMesa) {
-    selectMesa.addEventListener("change", () => {
+    setInterval(() => {
 
-        const mapa = document.getElementById("mapaMesas");
+        verificarNoShow();
 
-        if (!mapa) return;
+        atualizarMapa();
 
-        mapa.querySelectorAll(".mesa").forEach(mesa => {
-            mesa.classList.remove("selecionada");
-            mesa.setAttribute("aria-pressed", "false");
+        atualizarReservas();
+
+        atualizarEspera();
+
+    }, 15000);
+
+
+    // ======================================
+    // SINCRONIZAR MAPA COM FORMULÁRIO
+    // ======================================
+
+    const selectMesa =
+        document.getElementById("mesaReserva");
+
+    if (selectMesa) {
+
+        selectMesa.addEventListener("change", () => {
+
+            const mapa =
+                document.getElementById("mapaMesas");
+
+            if (!mapa) return;
+
+            mapa.querySelectorAll(".mesa").forEach(mesa => {
+
+                mesa.classList.remove("selecionada");
+
+                mesa.setAttribute("aria-pressed", "false");
+            });
+
+            const selecionada = Array.from(
+                mapa.querySelectorAll(".mesa")
+            ).find(mesa =>
+                mesa.querySelector("strong").textContent ===
+                "Mesa " + selectMesa.value
+            );
+
+            if (selecionada) {
+
+                selecionada.classList.add("selecionada");
+
+                selecionada.setAttribute("aria-pressed", "true");
+            }
         });
+    }
 
-        const selecionada = Array.from(
-            mapa.querySelectorAll(".mesa")
-        ).find(mesa =>
-            mesa.querySelector("strong").textContent ===
-            "Mesa " + selectMesa.value
-        );
 
-        if (selecionada) {
-            selecionada.classList.add("selecionada");
-            selecionada.setAttribute("aria-pressed", "true");
-        }
-    });
-}
+    // ======================================
     // CADASTRO DE CLIENTES
-    const formCadastro = document.getElementById("formCadastro");
+    // ======================================
+
+    const formCadastro =
+        document.getElementById("formCadastro");
 
     if (formCadastro) {
+
         formCadastro.addEventListener("submit", evento => {
+
             evento.preventDefault();
 
             const cliente = {
-                nome: document.getElementById("nome").value.trim(),
+
+                nome: document.getElementById("nome")
+                    .value.trim(),
+
                 email: document.getElementById("email")
                     .value.trim().toLowerCase(),
+
                 telefone: document.getElementById("telefone")
                     .value.trim(),
+
                 senha: document.getElementById("senha").value
             };
 
             const clientes = ler(CHAVE_CLIENTES);
 
             if (clientes.some(c => c.email === cliente.email)) {
+
                 mensagem(
                     "mensagemCadastro",
                     "Já existe um cadastro com esse e-mail.",
                     "erro"
                 );
+
                 return;
             }
 
             clientes.push(cliente);
+
             salvar(CHAVE_CLIENTES, clientes);
 
             formCadastro.reset();
@@ -394,11 +544,18 @@ if (selectMesa) {
         });
     }
 
+
+    // ======================================
     // LOGIN
-    const formLogin = document.getElementById("formLogin");
+    // ======================================
+
+    const formLogin =
+        document.getElementById("formLogin");
 
     if (formLogin) {
+
         formLogin.addEventListener("submit", evento => {
+
             evento.preventDefault();
 
             const email = document.getElementById("emailLogin")
@@ -411,11 +568,13 @@ if (selectMesa) {
             );
 
             if (!cliente) {
+
                 mensagem(
                     "mensagemLogin",
                     "E-mail ou senha incorretos. Confira seus dados ou faça o cadastro.",
                     "erro"
                 );
+
                 return;
             }
 
@@ -431,11 +590,18 @@ if (selectMesa) {
         });
     }
 
+
+    // ======================================
     // CRIAR RESERVA
-    const formReserva = document.getElementById("formReserva");
+    // ======================================
+
+    const formReserva =
+        document.getElementById("formReserva");
 
     if (formReserva) {
+
         formReserva.addEventListener("submit", evento => {
+
             evento.preventDefault();
 
             verificarNoShow();
@@ -450,15 +616,18 @@ if (selectMesa) {
             const data = document.getElementById("dataReserva").value;
 
             if (!clienteExiste(email)) {
+
                 mensagem(
                     "mensagemReserva",
                     "Esse e-mail não está cadastrado. Cadastre o cliente primeiro.",
                     "erro"
                 );
+
                 return;
             }
 
             if (!mesa || reservaAtivaMesa(mesa)) {
+
                 mensagem(
                     "mensagemReserva",
                     "Essa mesa não está disponível. Atualize a página e escolha outra.",
@@ -466,15 +635,22 @@ if (selectMesa) {
                 );
 
                 atualizarMapa();
+
                 return;
             }
 
-            if (new Date(data).getTime() <= Date.now()) {
+            if (
+                !data ||
+                Number.isNaN(new Date(data).getTime()) ||
+                new Date(data).getTime() <= Date.now()
+            ) {
+
                 mensagem(
                     "mensagemReserva",
                     "Escolha uma data e horário futuros.",
                     "erro"
                 );
+
                 return;
             }
 
@@ -487,25 +663,35 @@ if (selectMesa) {
             );
 
             if (conflito) {
+
                 mensagem(
                     "mensagemReserva",
                     "Esse cliente já tem uma reserva ativa. Finalize ou cancele antes de criar outra.",
                     "erro"
                 );
+
                 return;
             }
 
             reservas.push({
+
                 codigo: gerarCodigo(),
+
                 email: email,
+
                 mesa: mesa,
+
                 data: data,
+
                 status: "Pendente",
+
                 checkin: false,
+
                 criadoEm: new Date().toISOString()
             });
 
             salvar(CHAVE_RESERVAS, reservas);
+
             formReserva.reset();
 
             mensagem(
@@ -514,16 +700,26 @@ if (selectMesa) {
             );
 
             atualizarMapa();
+
             atualizarReservas();
         });
     }
 
-    // SIMULAR PAGAMENTO PIX
-    const formPagamento = document.getElementById("formPagamento");
+
+    // ======================================
+    // PAGAMENTO SIMULADO VIA PIX
+    // ======================================
+
+    const formPagamento =
+        document.getElementById("formPagamento");
 
     if (formPagamento) {
+
         formPagamento.addEventListener("submit", evento => {
+
             evento.preventDefault();
+
+            verificarNoShow();
 
             const codigo = document.getElementById("reservaPagamento")
                 .value;
@@ -535,15 +731,42 @@ if (selectMesa) {
             );
 
             if (!reserva) {
+
                 mensagem(
                     "mensagemPagamento",
                     "Selecione uma reserva pendente válida.",
                     "erro"
                 );
+
+                return;
+            }
+
+            // Não permitir pagamento após o prazo de No-Show
+            const horarioMarcado =
+                new Date(reserva.data).getTime();
+
+            const prazoFinal =
+                horarioMarcado + (30 * 60 * 1000);
+
+            if (Date.now() > prazoFinal) {
+
+                verificarNoShow();
+
+                atualizarMapa();
+
+                atualizarReservas();
+
+                mensagem(
+                    "mensagemPagamento",
+                    "O prazo da reserva terminou. Não é possível confirmar a caução.",
+                    "erro"
+                );
+
                 return;
             }
 
             reserva.status = "Paga";
+
             reserva.pagoEm = new Date().toISOString();
 
             salvar(CHAVE_RESERVAS, reservas);
@@ -554,15 +777,23 @@ if (selectMesa) {
             );
 
             atualizarMapa();
+
             atualizarReservas();
         });
     }
 
+
+    // ======================================
     // CHECK-IN
-    const formCheckin = document.getElementById("formCheckin");
+    // ======================================
+
+    const formCheckin =
+        document.getElementById("formCheckin");
 
     if (formCheckin) {
+
         formCheckin.addEventListener("submit", evento => {
+
             evento.preventDefault();
 
             verificarNoShow();
@@ -577,57 +808,58 @@ if (selectMesa) {
             );
 
             if (!reserva) {
+
                 mensagem(
                     "mensagemCheckin",
                     "Código não encontrado. Confira o código da reserva.",
                     "erro"
                 );
+
                 return;
             }
 
             if (reserva.status !== "Paga") {
+
                 mensagem(
                     "mensagemCheckin",
                     `Não foi possível fazer check-in. Status atual: ${reserva.status}. A caução deve estar confirmada e a reserva não pode estar cancelada.`,
                     "erro"
                 );
+
                 return;
             }
 
-          
-const horarioMarcado = new Date(reserva.data).getTime();
+            const horarioMarcado =
+                new Date(reserva.data).getTime();
 
-const prazoFinal = horarioMarcado + (30 * 60 * 1000);
+            const prazoFinal =
+                horarioMarcado + (30 * 60 * 1000);
 
-if (Date.now() > prazoFinal) {
-
-    verificarNoShow();
-    atualizarMapa();
-    atualizarReservas();
-
-    mensagem(
-        "mensagemCheckin",
-        "Prazo encerrado! Sua reserva foi cancelada por No-Show. O sistema registrou um reembolso de 10% da caução.",
-        "erro"
-    );
-
-    return;
-}
+            if (
+                Number.isNaN(horarioMarcado) ||
+                Date.now() > prazoFinal
             ) {
+
+                verificarNoShow();
+
+                atualizarMapa();
+
+                atualizarReservas();
+
                 mensagem(
                     "mensagemCheckin",
-                    "O prazo do check-in encerrou. A reserva deve ser cancelada pela regra de No-Show.",
+                    "Prazo encerrado! A reserva foi cancelada por No-Show. O sistema registrou o reembolso de 10% da caução.",
                     "erro"
                 );
 
-                verificarNoShow();
-                atualizarMapa();
-                atualizarReservas();
                 return;
             }
 
+            // Confirmar presença
             reserva.checkin = true;
+
             reserva.status = "Check-in realizado";
+
             reserva.checkinEm = new Date().toISOString();
 
             salvar(CHAVE_RESERVAS, reservas);
@@ -639,46 +871,61 @@ if (Date.now() > prazoFinal) {
             );
 
             atualizarMapa();
+
             atualizarReservas();
         });
     }
 
+
+    // ======================================
     // LISTA DE ESPERA
-    const formEspera = document.getElementById("formEspera");
+    // ======================================
+
+    const formEspera =
+        document.getElementById("formEspera");
 
     if (formEspera) {
+
         formEspera.addEventListener("submit", evento => {
+
             evento.preventDefault();
 
             const email = document.getElementById("emailEspera")
                 .value.trim().toLowerCase();
 
             if (!clienteExiste(email)) {
+
                 mensagem(
                     "mensagemEspera",
                     "Cadastre o cliente antes de entrar na lista de espera.",
                     "erro"
                 );
+
                 return;
             }
 
             const fila = ler(CHAVE_ESPERA);
 
             if (fila.some(item => item.email === email)) {
+
                 mensagem(
                     "mensagemEspera",
                     "Esse e-mail já está na lista de espera.",
                     "erro"
                 );
+
                 return;
             }
 
             fila.push({
+
                 email: email,
+
                 entrouEm: new Date().toISOString()
             });
 
             salvar(CHAVE_ESPERA, fila);
+
             formEspera.reset();
 
             mensagem(
@@ -689,4 +936,5 @@ if (Date.now() > prazoFinal) {
             atualizarEspera();
         });
     }
+
 });
