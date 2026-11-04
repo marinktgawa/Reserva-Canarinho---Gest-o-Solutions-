@@ -1,12 +1,13 @@
 
 :root {
-    --verde: #087443;
-    --verde-escuro: #075b36;
-    --amarelo: #f5c542;
-    --fundo: #f5f7f5;
-    --texto: #1f2d25;
-    --cinza: #66736b;
-    --borda: #dfe7e1;
+    --laranja: #E87524;
+    --laranja-escuro: #C85A18;
+    --laranja-claro: #FFF0E3;
+    --amarelo: #F5C542;
+    --fundo: #F7F5F2;
+    --texto: #302820;
+    --cinza: #746D66;
+    --borda: #E9DED4;
 }
 
 * {
@@ -22,7 +23,7 @@ body {
 }
 
 a {
-    color: var(--verde);
+    color: var(--laranja);
 }
 
 .topo {
@@ -36,7 +37,7 @@ a {
 }
 
 .marca {
-    color: var(--verde);
+    color: var(--laranja);
     font-weight: 800;
     text-decoration: none;
     font-size: 1.15rem;
@@ -52,13 +53,13 @@ nav {
 
 nav a {
     text-decoration: none;
-    color: #3e5145;
+    color: #51473E;
     font-size: 0.92rem;
 }
 
 nav a:hover,
 a:hover {
-    color: var(--verde-escuro);
+    color: var(--laranja-escuro);
 }
 
 .hero {
@@ -80,7 +81,7 @@ a:hover {
 }
 
 .hero h1 span {
-    color: var(--verde);
+    color: var(--laranja);
 }
 
 .hero-texto > p {
@@ -91,8 +92,8 @@ a:hover {
 
 .etiqueta {
     display: inline-block;
-    background: #e5f5e9;
-    color: var(--verde);
+    background: var(--laranja-claro);
+    color: var(--laranja-escuro);
     padding: 7px 12px;
     border-radius: 999px;
     font-size: 0.8rem;
@@ -108,7 +109,7 @@ a:hover {
 
 .botao {
     display: inline-block;
-    background: var(--verde);
+    background: var(--laranja);
     color: white;
     border: 0;
     border-radius: 9px;
@@ -118,22 +119,29 @@ a:hover {
     cursor: pointer;
     text-decoration: none;
     text-align: center;
+    transition: 0.3s ease;
 }
 
 .botao:hover {
     color: white;
-    background: var(--verde-escuro);
+    background: var(--laranja-escuro);
+    transform: translateY(-2px);
 }
 
 .botao.secundario {
-    background: #e8efe9;
-    color: var(--verde-escuro);
+    background: #F9E8D9;
+    color: var(--laranja-escuro);
+}
+
+.botao.secundario:hover {
+    background: #F3D8C1;
+    color: #A74712;
 }
 
 .botao.pequeno {
     padding: 8px 13px;
     color: white;
-    background: var(--verde);
+    background: var(--laranja);
 }
 
 .largura-total {
@@ -147,7 +155,7 @@ a:hover {
     border-radius: 16px;
     padding: 26px;
     margin: 22px 0;
-    box-shadow: 0 8px 24px rgba(24, 55, 36, 0.04);
+    box-shadow: 0 8px 24px rgba(80, 52, 28, 0.04);
 }
 
 .cartao h1,
@@ -158,7 +166,7 @@ a:hover {
 
 .destaque {
     padding: 38px;
-    background: linear-gradient(145deg, #fff, #edf8ef);
+    background: linear-gradient(145deg, #FFFFFF, #FFF0E3);
 }
 
 .bola {
@@ -179,7 +187,7 @@ a:hover {
 
 .mini-estatisticas strong {
     font-size: 1.2rem;
-    color: var(--verde);
+    color: var(--laranja);
 }
 
 .mini-estatisticas span,
@@ -189,7 +197,7 @@ a:hover {
 
 .aviso,
 .alerta {
-    background: #fff7da;
+    background: #FFF7DF;
     border-left: 4px solid var(--amarelo);
     border-radius: 7px;
     padding: 12px 15px;
@@ -224,7 +232,7 @@ input,
 select {
     width: 100%;
     padding: 12px;
-    border: 1px solid #cfd9d1;
+    border: 1px solid #DED2C8;
     border-radius: 8px;
     background: white;
     color: var(--texto);
@@ -233,8 +241,8 @@ select {
 
 input:focus,
 select:focus {
-    outline: 2px solid #9bd6b2;
-    border-color: var(--verde);
+    outline: 2px solid #F4C19D;
+    border-color: var(--laranja);
 }
 
 .mensagem {
@@ -243,11 +251,11 @@ select:focus {
 }
 
 .mensagem.erro {
-    color: #b42318;
+    color: #B42318;
 }
 
 .mensagem.sucesso {
-    color: var(--verde);
+    color: var(--laranja-escuro);
 }
 
 .cabecalho-pagina {
@@ -284,15 +292,17 @@ select:focus {
 }
 
 .ponto.livre {
-    background: var(--verde);
+    background: var(--laranja);
 }
 
 .ponto.ocupada {
-    background: #c75b4b;
+    background: #C75B4B;
 }
 
 
-/* MAPA DE MESAS */
+/* =====================================
+   MAPA DE MESAS
+   ===================================== */
 
 .grade-mesas {
     display: grid;
@@ -326,28 +336,34 @@ select:focus {
     margin-top: 7px;
 }
 
+/* Mesa livre */
 .mesa.livre {
-    border-color: #a7d7b7;
-    background: #eef9f1;
+    border-color: #EFAE7D;
+    background: #FFF1E5;
+    color: #A74712;
 }
 
 .mesa.livre:hover {
-    background: #d5f1dc;
+    background: #FFE1C8;
+    border-color: var(--laranja);
     transform: translateY(-3px);
 }
 
+/* Mesa reservada */
 .mesa.ocupada {
-    border-color: #edc1ba;
-    background: #fff0ed;
-    color: #a23d30;
+    border-color: #EDC1BA;
+    background: #FFF0ED;
+    color: #A23D30;
     cursor: not-allowed;
     opacity: 0.8;
 }
 
+/* Mesa selecionada */
 .mesa.selecionada {
-    border: 3px solid var(--verde);
-    background: #c9efd4;
-    box-shadow: 0 0 0 3px rgba(8, 116, 67, 0.15);
+    border: 3px solid var(--laranja-escuro);
+    background: var(--laranja);
+    color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(232, 117, 36, 0.15);
     transform: translateY(-3px);
 }
 
@@ -395,7 +411,7 @@ select:focus {
     display: inline-block;
     border-radius: 999px;
     padding: 3px 9px;
-    background: #edf1ee;
+    background: #F1EDE9;
     font-size: 0.78rem;
     font-weight: 700;
 }
@@ -403,13 +419,13 @@ select:focus {
 .status.pago,
 .status.confirmada,
 .status.checkin {
-    color: var(--verde);
-    background: #e4f5e8;
+    color: #A74712;
+    background: #FFF0E3;
 }
 
 .status.cancelada {
-    color: #a23d30;
-    background: #fff0ed;
+    color: #A23D30;
+    background: #FFF0ED;
 }
 
 .pix-demo {
@@ -418,11 +434,11 @@ select:focus {
     display: grid;
     gap: 5px;
     border-radius: 10px;
-    background: #eef8f0;
+    background: #FFF1E5;
 }
 
 .pix-demo strong {
-    color: var(--verde);
+    color: var(--laranja-escuro);
     font-size: 1.7rem;
 }
 
@@ -438,6 +454,11 @@ footer {
     border-top: 1px solid var(--borda);
     background: #fff;
 }
+
+
+/* =====================================
+   RESPONSIVIDADE
+   ===================================== */
 
 @media (max-width: 800px) {
     .topo {
