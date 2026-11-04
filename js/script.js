@@ -929,4 +929,21 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+const botaoCopiarPix = document.getElementById("copiarPix");
+
+if (botaoCopiarPix) {
+    botaoCopiarPix.addEventListener("click", async function () {
+        const chavePix = document.getElementById("chavePix").value;
+        const mensagemPix = document.getElementById("mensagemPix");
+
+        try {
+            await navigator.clipboard.writeText(chavePix);
+            mensagemPix.textContent = "Chave Pix copiada com sucesso!";
+        } catch (erro) {
+            mensagemPix.textContent =
+                "Não foi possível copiar automaticamente. Copie a chave manualmente.";
+        }
+    });
+}
+
 });
