@@ -1,15 +1,16 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de mesas</title>
-     <link rel="stylesheet" href="css/style.css">
+    <title>Mapa de mesas | ReservaCanarinho</title>
+    <link rel="stylesheet" href="css/style.css">
     <script src="js/script.js" defer></script>
 </head>
 <body>
-     <header class="topo">
-        <a class="marca" href="index.html"> Reserva Canarinho</a>
+    <header class="topo">
+        <a class="marca" href="index.html">🐤 ReservaCanarinho</a>
 
         <nav>
             <a href="index.html">Início</a>
@@ -20,49 +21,36 @@
     </header>
 
     <main class="container">
-
         <div class="cabecalho-pagina">
             <div>
-                <a class="voltar" href="index.html">
-                    ← Voltar ao início
-                </a>
-
+                <a class="voltar" href="index.html">← Voltar ao início</a>
                 <h1>Mapa de mesas</h1>
-
                 <p class="muted">
-                    Clique em uma mesa disponível para selecioná-la.
+                    Escolha uma mesa livre para iniciar sua reserva.
                 </p>
             </div>
 
             <div class="legenda">
                 <span><i class="ponto livre"></i> Livre</span>
                 <span><i class="ponto ocupada"></i> Reservada</span>
-                <span><i class="ponto selecionada"></i> Selecionada</span>
             </div>
         </div>
 
-        <!-- MAPA DE MESAS -->
-        <section class="cartao">
-            <h2>Escolha sua mesa</h2>
+        <div id="mapaMesas" class="grade-mesas"></div>
+        
+        <p class="muted pequeno-texto">
+    Clique em uma mesa verde para selecioná-la.
+    Mesas vermelhas estão reservadas e não podem ser selecionadas.
+</p>
 
-            <div id="mapaMesas" class="grade-mesas"></div>
-
-            <p id="mensagemMesa" class="mensagem" aria-live="polite">
-                Selecione uma mesa livre.
-            </p>
-        </section>
-
-        <!-- FORMULÁRIO DE RESERVA -->
         <section class="cartao reserva-box">
             <h2>Fazer uma reserva</h2>
 
-            <form id="formReserva" class="form-reserva">
-
+            <form id="formReserva" class="form-linha">
                 <div>
                     <label for="clienteReserva">
                         E-mail do cliente cadastrado
                     </label>
-
                     <input
                         id="clienteReserva"
                         type="email"
@@ -72,14 +60,9 @@
                 </div>
 
                 <div>
-                    <label for="mesaReserva">
-                        Mesa escolhida
-                    </label>
-
+                    <label for="mesaReserva">Mesa escolhida</label>
                     <select id="mesaReserva" required>
-                        <option value="">
-                            Selecione uma mesa
-                        </option>
+                        <option value="">Selecione uma mesa livre</option>
                     </select>
                 </div>
 
@@ -87,7 +70,6 @@
                     <label for="dataReserva">
                         Data e horário do jogo
                     </label>
-
                     <input
                         id="dataReserva"
                         type="datetime-local"
@@ -95,67 +77,48 @@
                     >
                 </div>
 
-                <button class="botao" type="submit">
-                    Reservar mesa
-                </button>
-
+                <button class="botao" type="submit">Reservar mesa</button>
             </form>
 
             <p class="muted pequeno-texto">
-                A reserva ficará pendente até a confirmação
-                da caução na página de pagamento.
+                A reserva fica pendente até a caução demonstrativa
+                ser confirmada na página Caução.
             </p>
 
-            <p id="mensagemReserva" class="mensagem"
-               aria-live="polite"></p>
+            <p id="mensagemReserva" class="mensagem" aria-live="polite"></p>
         </section>
 
-        <!-- MINHAS RESERVAS -->
         <section class="cartao">
             <h2>Minhas reservas</h2>
-
             <div id="listaReservas"></div>
         </section>
 
-        <!-- LISTA DE ESPERA -->
         <section class="cartao">
             <h2>Lista de espera</h2>
 
             <p class="muted">
-                Caso não encontre mesas disponíveis,
-                você pode entrar na lista de espera.
+                Se todas as mesas estiverem reservadas,
+                você pode entrar na fila.
             </p>
 
-            <form id="formEspera" class="form-espera">
-
+            <form id="formEspera" class="form-linha">
                 <div>
                     <label for="emailEspera">E-mail</label>
-
-                    <input
-                        id="emailEspera"
-                        type="email"
-                        required
-                        placeholder="voce@email.com"
-                    >
+                    <input id="emailEspera" type="email" required>
                 </div>
 
                 <button class="botao secundario" type="submit">
                     Entrar na lista de espera
                 </button>
-
             </form>
 
-            <p id="mensagemEspera" class="mensagem"
-               aria-live="polite"></p>
-
+            <p id="mensagemEspera" class="mensagem" aria-live="polite"></p>
             <ul id="listaEspera"></ul>
         </section>
-
     </main>
 
     <footer>
-        Reserva Canarinho · GS
+        ReservaCanarinho · GS
     </footer>
-
 </body>
 </html>

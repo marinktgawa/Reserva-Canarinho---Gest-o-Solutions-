@@ -291,30 +291,39 @@ select:focus {
     background: #c75b4b;
 }
 
+
+/* MAPA DE MESAS */
+
 .grade-mesas {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 14px;
     margin: 24px 0;
 }
 
 .mesa {
-    border: 1px solid var(--borda);
+    width: 100%;
+    min-height: 110px;
+    border: 2px solid var(--borda);
     background: white;
     border-radius: 12px;
     padding: 20px 10px;
     text-align: center;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--texto);
+    transition: 0.2s;
 }
 
 .mesa strong {
     display: block;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
 }
 
 .mesa span {
     display: block;
-    font-size: 0.82rem;
-    margin-top: 5px;
+    font-size: 0.85rem;
+    margin-top: 7px;
 }
 
 .mesa.livre {
@@ -322,10 +331,35 @@ select:focus {
     background: #eef9f1;
 }
 
+.mesa.livre:hover {
+    background: #d5f1dc;
+    transform: translateY(-3px);
+}
+
 .mesa.ocupada {
     border-color: #edc1ba;
     background: #fff0ed;
     color: #a23d30;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.mesa.selecionada {
+    border: 3px solid var(--verde);
+    background: #c9efd4;
+    box-shadow: 0 0 0 3px rgba(8, 116, 67, 0.15);
+    transform: translateY(-3px);
+}
+
+.mesa:focus-visible {
+    outline: 3px solid var(--amarelo);
+    outline-offset: 3px;
+}
+
+@media (max-width: 800px) {
+    .grade-mesas {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .form-linha {
@@ -433,110 +467,3 @@ footer {
         gap: 15px;
     }
 }
-
-/* MESAS CLICÁVEIS */
-
-.grade-mesas {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 15px;
-    margin: 24px 0;
-}
-
-.mesa {
-    width: 100%;
-    min-height: 110px;
-    border: 2px solid #a7d7b7;
-    background: #eef9f1;
-    color: #075b36;
-    border-radius: 12px;
-    padding: 20px 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s;
-    font-family: Arial, sans-serif;
-}
-
-.mesa strong {
-    display: block;
-    font-size: 1.2rem;
-}
-
-.mesa span {
-    display: block;
-    font-size: 0.85rem;
-    margin-top: 7px;
-}
-
-.mesa.livre:hover {
-    background: #d5f0dc;
-    transform: translateY(-3px);
-    border-color: #087443;
-}
-
-.mesa.ocupada {
-    background: #fff0ed;
-    border-color: #edc1ba;
-    color: #a23d30;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
-.mesa.selecionada {
-    background: #087443;
-    color: white;
-    border: 3px solid #f5c542;
-    transform: scale(1.03);
-}
-
-.ponto.selecionada {
-    background: #087443;
-    outline: 2px solid #f5c542;
-}
-
-.form-reserva,
-.form-espera {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    align-items: end;
-}
-
-.form-reserva > div,
-.form-espera > div {
-    min-width: 0;
-}
-
-.form-reserva .botao,
-.form-espera .botao {
-    min-height: 46px;
-}
-
-.botao.reembolso {
-    background: #176baf;
-    margin-top: 10px;
-}
-
-.botao.reembolso:hover {
-    background: #104d80;
-}
-
-.reembolso-info {
-    display: block;
-    color: #176baf;
-    font-weight: bold;
-    margin-top: 8px;
-    font-size: 0.9rem;
-}
-
-@media (max-width: 800px) {
-    .grade-mesas {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .form-reserva,
-    .form-espera {
-        grid-template-columns: 1fr;
-    }
-}
-
