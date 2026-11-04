@@ -8,9 +8,12 @@ const CHAVE_CLIENTES = "canarinho_clientes";
 const CHAVE_RESERVAS = "canarinho_reservas";
 const CHAVE_ESPERA = "canarinho_espera";
 
+// CONFIGURAÇÕES
 const TOTAL_MESAS = 10;
-const VALOR_CAUCao = 30;
-const PERCENTUAL_REEMBOLSO = 10;
+const VALOR_CAUCAO = 30;
+const PERCENTUAL_REEMBOLSO = 90;
+const PERCENTUAL_RETIDO = 10;
+const PRAZO_CHECKIN = 30 * 60 * 1000;
 
 
 // ==========================================
@@ -117,18 +120,23 @@ function verificarNoShow() {
             const horarioMarcado =
                 new Date(reserva.data).getTime();
 
-            // Prazo de 30 minutos após o horário marcado
             const prazoFinal =
-                horarioMarcado + (30 * 60 * 1000);
+                horarioMarcado + PRAZO_CHECKIN;
 
             if (
                 !Number.isNaN(horarioMarcado) &&
                 agora > prazoFinal
             ) {
 
-                // Calcular reembolso de 10%
+                // Cliente recebe 90% da caução
                 const valorReembolso =
-                    VALOR_CAUCao * (PERCENTUAL_REEMBOLSO / 100);
+                    VALOR_CAUCAO *
+                    (PERCENTUAL_REEMBOLSO / 100);
+
+                // Estabelecimento retém 10%
+                const valorRetido =
+                    VALOR_CAUCAO *
+                    (PERCENTUAL_RETIDO / 100);
 
                 reserva.status = "Cancelada por No-Show";
 
@@ -137,8 +145,10 @@ function verificarNoShow() {
                 reserva.percentualReembolso =
                     PERCENTUAL_REEMBOLSO;
 
-                reserva.valorRetido =
-                    VALOR_CAUCao - valorReembolso;
+                reserva.valorRetido = valorRetido;
+
+                reserva.percentualRetido =
+                    PERCENTUAL_RETIDO;
 
                 reserva.canceladaEm =
                     new Date().toISOString();
@@ -158,12 +168,11 @@ function verificarNoShow() {
 
 
 // ==========================================
-// MAPA DE MESAS CLICÁVEIS
+// MAPA DE MESAS
 // ==========================================
 
 function atualizarMapa() {
     const mapa = document.getElementById("mapaMesas");
-
     const select = document.getElementById("mesaReserva");
 
     if (!mapa) return;
@@ -177,7 +186,6 @@ function atualizarMapa() {
             '<option value="">Selecione uma mesa livre</option>';
     }
 
-    // Criar as 10 mesas
     for (let numero = 1; numero <= TOTAL_MESAS; numero++) {
 
         const ocupada = reservaAtivaMesa(numero);
@@ -195,25 +203,23 @@ function atualizarMapa() {
 
         card.setAttribute(
             "aria-label",
-            "Mesa " + numero + (ocupada ? ", reservada" : ", livre")
+            "Mesa " + numero +
+            (ocupada ? ", reservada" : ", livre")
         );
 
-        // Nome da mesa
         const titulo = document.createElement("strong");
 
         titulo.textContent = "Mesa " + numero;
 
-        // Situação da mesa
         const status = document.createElement("span");
 
         status.textContent =
             ocupada ? "Reservada" : "Livre";
 
         card.appendChild(titulo);
-
         card.appendChild(status);
 
-        // Selecionar mesa ao clicar
+        // Selecionar mesa
         card.addEventListener("click", () => {
 
             if (ocupada) return;
@@ -222,15 +228,11 @@ function atualizarMapa() {
                 select.value = numero;
             }
 
-            // Retirar seleção anterior
             mapa.querySelectorAll(".mesa").forEach(mesa => {
-
                 mesa.classList.remove("selecionada");
-
                 mesa.setAttribute("aria-pressed", "false");
             });
 
-            // Destacar mesa selecionada
             card.classList.add("selecionada");
 
             card.setAttribute("aria-pressed", "true");
@@ -251,7 +253,7 @@ function atualizarMapa() {
         }
     }
 
-    // Restaurar seleção anterior, se ainda estiver livre
+    // Restaurar seleção anterior
     if (
         select &&
         mesaAnterior &&
@@ -270,9 +272,7 @@ function atualizarMapa() {
         );
 
         if (mesaSelecionada) {
-
             mesaSelecionada.classList.add("selecionada");
-
             mesaSelecionada.setAttribute("aria-pressed", "true");
         }
     }
@@ -280,11 +280,10 @@ function atualizarMapa() {
 
 
 // ==========================================
-// ATUALIZAR MINHAS RESERVAS
+// ATUALIZAR RESERVAS
 // ==========================================
 
 function atualizarReservas() {
-
     const lista = document.getElementById("listaReservas");
 
     if (lista) {
@@ -331,13 +330,13 @@ function atualizarReservas() {
                     ${
                         reserva.reembolso !== undefined
                         ? `
-                            <br>
-                            <strong>Reembolso (${reserva.percentualReembolso}%):</strong>
+                            <br><br>
+                            <strong>Reembolso ao cliente (${reserva.percentualReembolso}%):</strong>
                             R$ ${Number(reserva.reembolso).toFixed(2).replace(".", ",")}
 
                             <br>
 
-                            <strong>Valor retido:</strong>
+                            <strong>Valor retido pelo estabelecimento (${reserva.percentualRetido}%):</strong>
                             R$ ${Number(reserva.valorRetido).toFixed(2).replace(".", ",")}
                         `
                         : ""
@@ -382,7 +381,6 @@ function atualizarReservas() {
 // ==========================================
 
 function atualizarEspera() {
-
     const lista = document.getElementById("listaEspera");
 
     if (!lista) return;
@@ -392,9 +390,7 @@ function atualizarEspera() {
     lista.innerHTML = fila.length
 
         ? fila.map((item, indice) =>
-
             `<li>${indice + 1}. ${escapar(item.email)} — aguardando mesa</li>`
-
         ).join("")
 
         : "<li>A lista de espera está vazia.</li>";
@@ -406,7 +402,6 @@ function atualizarEspera() {
 // ==========================================
 
 function classeStatus(status) {
-
     if (status === "Paga") return "pago";
 
     if (status === "Check-in realizado") return "checkin";
@@ -423,10 +418,8 @@ function classeStatus(status) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Verificar reservas expiradas
     verificarNoShow();
 
-    // Carregar informações
     atualizarMapa();
 
     atualizarReservas();
@@ -435,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ======================================
-    // ATUALIZAÇÃO AUTOMÁTICA
+    // ATUALIZAÇÃO AUTOMÁTICA A CADA 15 SEGUNDOS
     // ======================================
 
     setInterval(() => {
@@ -452,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ======================================
-    // SINCRONIZAR MAPA COM FORMULÁRIO
+    // SINCRONIZAR MAPA E FORMULÁRIO
     // ======================================
 
     const selectMesa =
@@ -468,9 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!mapa) return;
 
             mapa.querySelectorAll(".mesa").forEach(mesa => {
-
                 mesa.classList.remove("selecionada");
-
                 mesa.setAttribute("aria-pressed", "false");
             });
 
@@ -482,9 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             if (selecionada) {
-
                 selecionada.classList.add("selecionada");
-
                 selecionada.setAttribute("aria-pressed", "true");
             }
         });
@@ -707,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ======================================
-    // PAGAMENTO SIMULADO VIA PIX
+    // PAGAMENTO SIMULADO
     // ======================================
 
     const formPagamento =
@@ -741,14 +730,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Não permitir pagamento após o prazo de No-Show
+            // Não permitir pagamento após o prazo
             const horarioMarcado =
                 new Date(reserva.data).getTime();
 
             const prazoFinal =
-                horarioMarcado + (30 * 60 * 1000);
+                horarioMarcado + PRAZO_CHECKIN;
 
-            if (Date.now() > prazoFinal) {
+            if (
+                Number.isNaN(horarioMarcado) ||
+                Date.now() > prazoFinal
+            ) {
 
                 verificarNoShow();
 
@@ -833,7 +825,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 new Date(reserva.data).getTime();
 
             const prazoFinal =
-                horarioMarcado + (30 * 60 * 1000);
+                horarioMarcado + PRAZO_CHECKIN;
 
             if (
                 Number.isNaN(horarioMarcado) ||
@@ -848,7 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 mensagem(
                     "mensagemCheckin",
-                    "Prazo encerrado! A reserva foi cancelada por No-Show. O sistema registrou o reembolso de 10% da caução.",
+                    "Prazo encerrado! A reserva foi cancelada por No-Show. O sistema registrou R$ 27,00 de reembolso e R$ 3,00 de valor retido.",
                     "erro"
                 );
 
